@@ -1,12 +1,14 @@
 package git_util
 
 import (
-	"fmt"
 	"git-analyse/analyse"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 type GitRepository struct {
@@ -59,14 +61,25 @@ func (repo *GitRepository) Analyse() {
 		}
 	}
 
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"e-mail", "name", "+", "-", "="})
+
+	var total_p, total_m, total_s int
+
 	for _, item := range res {
 		names := make([]string, 0)
 		for name := range item.Name {
 			names = append(names, name)
 		}
-		fmt.Println("Email:", item.Email, "Name:", strings.Join(names, ","))
-		fmt.Println("\t+", item.Plus, "-", item.Minus, "->", item.Plus-item.Minus)
+		total_p += item.Plus
+		total_m += item.Minus
+		total_s += item.Plus - item.Minus
+		t.AppendRow(table.Row{item.Email, strings.Join(names, ","), item.Plus, item.Minus, item.Plus - item.Minus})
+		t.AppendSeparator()
 	}
+	t.AppendFooter(table.Row{"", "", total_p, total_m, total_s})
+	t.Render()
 }
 
 func (repo *GitRepository) allCommitHash() []string {
