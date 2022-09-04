@@ -108,6 +108,11 @@ func (repo *GitRepository) getCommitInfo(commit string) GitCommitInfo {
 			break
 		}
 	}
+
+	if split_line_n == 0 {
+		split_line_n = len(lines)
+	}
+
 	res := GitCommitInfo{
 		Name:  "",
 		Email: "",
