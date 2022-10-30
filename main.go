@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"git-analyse/git_util"
+	"git-analyse/get_repository"
 	"os"
 )
 
@@ -16,7 +16,7 @@ func main() {
 	repository_path := os.Args[1]
 	fmt.Println("repository path:", repository_path)
 
-	repository := git_util.New(repository_path)
-	repository.Load()
-	repository.Analyse()
+	repository := get_repository.New(repository_path)
+
+	repository.AnalyseCommit()
 }

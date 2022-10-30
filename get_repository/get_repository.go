@@ -1,7 +1,6 @@
-package git_util
+package get_repository
 
 import (
-	"git-analyse/analyse"
 	"os"
 	"os/exec"
 	"strconv"
@@ -28,6 +27,28 @@ type GitCommitInfo struct {
 	Diffs      []GitCommitDiffItem
 }
 
+type UserCommitAnalyseItem struct {
+	Email string
+	Name  map[string]bool
+	Plus  int
+	Minus int
+}
+
+func newUserCommitAnalyseItem(email string) *UserCommitAnalyseItem {
+	return &UserCommitAnalyseItem{
+		Email: email,
+		Name:  make(map[string]bool),
+		Minus: 0,
+		Plus:  0,
+	}
+}
+
+func (uai *UserCommitAnalyseItem) AddRecord(name string, plus, minus int) {
+	uai.Plus += plus
+	uai.Minus += minus
+	uai.Name[name] = true
+}
+
 func New(path string) *GitRepository {
 	res := &GitRepository{
 		Path:    path,
@@ -36,7 +57,7 @@ func New(path string) *GitRepository {
 	return res
 }
 
-func (repo *GitRepository) Load() {
+func (repo *GitRepository) loadCommits() {
 	repo.Commits = make([]GitCommitInfo, 0, 100)
 	all_commit_hash_list := repo.allCommitHash()
 	for _, commit_hash := range all_commit_hash_list {
@@ -44,15 +65,16 @@ func (repo *GitRepository) Load() {
 	}
 }
 
-func (repo *GitRepository) Analyse() {
-	res := make(map[string]*analyse.UserAnalyseItem)
+func (repo *GitRepository) AnalyseCommit() {
+	repo.loadCommits()
+	res := make(map[string]*UserCommitAnalyseItem)
 
 	for _, commit_info := range repo.Commits {
 
 		uai, err := res[commit_info.Email]
 
 		if !err {
-			uai = analyse.New(commit_info.Email)
+			uai = newUserCommitAnalyseItem(commit_info.Email)
 			res[commit_info.Email] = uai
 		}
 
