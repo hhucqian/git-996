@@ -29,15 +29,20 @@ type GitCommitInfo struct {
 
 type UserCommitAnalyseItem struct {
 	Email string
-	Name  map[string]bool
+	Name  string
 	Plus  int
 	Minus int
+}
+
+type GitBlameAnalyseItem struct {
+	Email string
+	N     int
 }
 
 func newUserCommitAnalyseItem(email string) *UserCommitAnalyseItem {
 	return &UserCommitAnalyseItem{
 		Email: email,
-		Name:  make(map[string]bool),
+		Name:  "",
 		Minus: 0,
 		Plus:  0,
 	}
@@ -46,7 +51,7 @@ func newUserCommitAnalyseItem(email string) *UserCommitAnalyseItem {
 func (uai *UserCommitAnalyseItem) AddRecord(name string, plus, minus int) {
 	uai.Plus += plus
 	uai.Minus += minus
-	uai.Name[name] = true
+	uai.Name = name
 }
 
 func New(path string) *GitRepository {
@@ -65,7 +70,7 @@ func (repo *GitRepository) loadCommits() {
 	}
 }
 
-func (repo *GitRepository) AnalyseCommit() {
+func (repo *GitRepository) AnalyseCommit() map[string]*UserCommitAnalyseItem {
 	repo.loadCommits()
 	res := make(map[string]*UserCommitAnalyseItem)
 
@@ -82,26 +87,7 @@ func (repo *GitRepository) AnalyseCommit() {
 			uai.AddRecord(commit_info.Name, record.Plus, record.Minus)
 		}
 	}
-
-	t := table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"e-mail", "name", "+", "-", "="})
-
-	var total_p, total_m, total_s int
-
-	for _, item := range res {
-		names := make([]string, 0)
-		for name := range item.Name {
-			names = append(names, name)
-		}
-		total_p += item.Plus
-		total_m += item.Minus
-		total_s += item.Plus - item.Minus
-		t.AppendRow(table.Row{item.Email, strings.Join(names, ","), item.Plus, item.Minus, item.Plus - item.Minus})
-		t.AppendSeparator()
-	}
-	t.AppendFooter(table.Row{"", "", total_p, total_m, total_s})
-	t.Render()
+	return res
 }
 
 func (repo *GitRepository) allCommitHash() []string {
@@ -119,6 +105,7 @@ func (repo *GitRepository) runCommad(name string, arg ...string) string {
 		return string(res[:])
 	}
 }
+
 func (repo *GitRepository) getCommitInfo(commit string) GitCommitInfo {
 	result := repo.runCommad("git", "show", "--pretty=%an%n%ae%n%at", "--numstat", commit)
 	result = strings.TrimSpace(result)
@@ -151,4 +138,79 @@ func (repo *GitRepository) getCommitInfo(commit string) GitCommitInfo {
 		res.Diffs[i-split_line_n].Path = parts[2]
 	}
 	return res
+}
+
+func (repo *GitRepository) AnalyseBlame() map[string]*GitBlameAnalyseItem {
+	all_files := repo.GetAllFiles()
+	res := make(map[string]*GitBlameAnalyseItem)
+	for _, one_file := range all_files {
+		if one_file != "" {
+			file_res := repo.getFileBlameInfo(one_file)
+
+			for email, item := range file_res {
+				res_item, err := res[email]
+				if !err {
+					res[email] = item
+				} else {
+					res_item.N += item.N
+				}
+			}
+		}
+	}
+
+	return res
+}
+
+func (repo *GitRepository) GetAllFiles() []string {
+	result := repo.runCommad("git", "ls-files")
+	return strings.Split(result, "\n")
+}
+
+func (repo *GitRepository) getFileBlameInfo(filename string) map[string]*GitBlameAnalyseItem {
+	result := repo.runCommad("git", "blame", "-e", filename)
+	res := make(map[string]*GitBlameAnalyseItem)
+	for _, line := range strings.Split(result, "\n") {
+		if line != "" {
+			email := line[strings.Index(line, "(<")+2:]
+			email = email[:strings.Index(email, ">")]
+			item, err := res[email]
+			if !err {
+				item = &GitBlameAnalyseItem{Email: email, N: 0}
+				res[email] = item
+			}
+			item.N++
+		}
+	}
+	return res
+}
+
+func (repo *GitRepository) Anaylse() {
+
+	commit_res := repo.AnalyseCommit()
+	blame_res := repo.AnalyseBlame()
+
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"e-mail", "name", "+", "-", "产出", "留存率", "贡献率"})
+
+	var total_n int
+
+	for _, item := range commit_res {
+		total_n += blame_res[item.Email].N
+	}
+
+	for _, item := range commit_res {
+		t.AppendRow(table.Row{
+			item.Email,
+			item.Name,
+			item.Plus,
+			item.Minus,
+			blame_res[item.Email].N,
+			float32(blame_res[item.Email].N) / float32(item.Plus) * 100,
+			float32(blame_res[item.Email].N) / float32(total_n) * 100,
+		})
+		t.AppendSeparator()
+	}
+	t.AppendFooter(table.Row{"", "", "-", "-", total_n, "-", "-"})
+	t.Render()
 }

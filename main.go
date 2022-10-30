@@ -18,5 +18,5 @@ func main() {
 
 	repository := get_repository.New(repository_path)
 
-	repository.AnalyseCommit()
+	repository.Anaylse()
 }
