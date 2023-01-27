@@ -23,20 +23,16 @@ func Print(dbPath string) {
 	defer storage.Close()
 
 	emails, _ := storage.EmailList()
-	fmt.Printf("emails: %v\n", emails)
 
 	lastCommitHash, _ := storage.LatestCommitHash()
-	fmt.Printf("lastCommitHash: %v\n", lastCommitHash)
 
 	commitSummary, _ := storage.CommitSummary(lastCommitHash)
-	fmt.Printf("commitSummary: %v\n", commitSummary)
 
 	var userCommitSummary = make(map[string]model.DBCommitSummary)
 	for _, email := range emails {
 		summary, _ := storage.CommitEmailSummary(lastCommitHash, email)
 		userCommitSummary[email] = summary
 	}
-	fmt.Printf("userCommitSummary: %v\n", userCommitSummary)
 
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
