@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	loadCmd.Flags().String("db", "db.sqlite", "db path")
+	loadCmd.Flags().String("db", "", "db path")
 	loadCmd.SetArgs([]string{"."})
 	rootCmd.AddCommand(loadCmd)
 }

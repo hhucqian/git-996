@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	printCmd.Flags().String("db", "db.sqlite", "db path")
+	printCmd.Flags().String("db", "", "db path")
 	rootCmd.AddCommand(printCmd)
 }
 
