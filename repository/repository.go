@@ -104,7 +104,7 @@ func (repo *Repository) commitSummary(hash string) map[string]*model.GitBlameIte
 }
 
 func (repo *Repository) allFilesInCommit(hash string) []string {
-	result := repo.runCommad("git", "ls-tree", "--name-only", "-r", hash)
+	result := repo.runCommad("git", "-c", "core.quotepath=off", "ls-tree", "--name-only", "-r", hash)
 	return strings.Split(strings.TrimSpace(result), "\n")
 }
 
