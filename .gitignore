@@ -1,1 +1,3 @@
-.vscode
+\.vscode
+\db.sqlite
+\git-analyse
