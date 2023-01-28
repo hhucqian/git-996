@@ -51,10 +51,10 @@ func (repo *Repository) commitInfo(hash string) model.GitCommitInfo {
 	res.AuthorTime = time.Unix(unix_time, 0)
 	for i := split_line_n; i < len(lines); i++ {
 		parts := strings.Split(lines[i], "\t")
-		pValue, _ := strconv.Atoi(parts[0])
-		mValue, _ := strconv.Atoi(parts[1])
-		res.Plus += pValue
-		res.Minus += mValue
+		pValue, _ := strconv.ParseInt(parts[0], 10, 32)
+		mValue, _ := strconv.ParseInt(parts[1], 10, 32)
+		res.Plus += int32(pValue)
+		res.Minus += int32(mValue)
 	}
 	return res
 }
