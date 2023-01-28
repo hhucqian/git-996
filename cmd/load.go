@@ -18,7 +18,7 @@ var loadCmd = &cobra.Command{
 	Long:  `加载git数据`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := repository.LoadFromPath(args[0], cmd.Flag("db").Value.String()); err != nil {
+		if err := repository.LoadAndPersistFromPath(args[0], cmd.Flag("db").Value.String()); err != nil {
 			panic(err.Error())
 		}
 	},
