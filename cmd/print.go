@@ -8,6 +8,7 @@ import (
 
 func init() {
 	printCmd.Flags().String("db", "", "db path")
+	rootCmd.MarkFlagRequired("db")
 	rootCmd.AddCommand(printCmd)
 }
 
