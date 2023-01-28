@@ -6,6 +6,7 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.3.7
 	github.com/spf13/cobra v1.6.1
 	modernc.org/sqlite v1.20.3
+	github.com/blockloop/scan v1.3.0
 )
 
 require (
@@ -15,10 +16,6 @@ require (
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	go.mongodb.org/mongo-driver v1.10.0 // indirect
-)
-
-require (
-	github.com/blockloop/scan v1.3.0
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
