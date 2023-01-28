@@ -57,6 +57,8 @@ func LoadAndPrintFromPath(repositoryPath string) {
 		}
 		printInfo.Members[commitInfo.Email].CodeIncrease += commitInfo.Plus
 		printInfo.Members[commitInfo.Email].CodeDecrease += commitInfo.Minus
+		printInfo.CodeIncrease += commitInfo.Plus
+		printInfo.CodeDecrease += commitInfo.Minus
 	}
 	commitSummary := repo.commitSummary(commitHashList[0])
 	for email, gitBlameItem := range commitSummary {

@@ -3,6 +3,7 @@ package persisit
 import (
 	"database/sql"
 	"errors"
+	"git-analyse/model"
 	"os"
 	"strings"
 
@@ -34,4 +35,25 @@ func createDBFile(dbPath string) {
 		os.MkdirAll(dbFolder, 0755)
 	}
 	os.Create(dbPath)
+}
+
+func (storage *Storage) LatestCommitSummary() model.PrintInfo {
+	var res = model.PrintInfo{Members: make(map[string]*model.PrintInfo_UserInfo)}
+	emails, _ := storage.EmailList()
+
+	lastCommitHash, _ := storage.LatestCommitHash()
+
+	commitSummary, _ := storage.CommitSummary(lastCommitHash)
+	res.N = commitSummary.N
+	res.CodeDecrease = commitSummary.CodeDecrease
+	res.CodeIncrease = commitSummary.CodeIncrease
+
+	for _, email := range emails {
+		summary, _ := storage.CommitEmailSummary(lastCommitHash, email)
+		res.Members[email] = &model.PrintInfo_UserInfo{EMail: email}
+		res.Members[email].N = summary.N
+		res.Members[email].CodeDecrease = summary.CodeDecrease
+		res.Members[email].CodeIncrease = summary.CodeIncrease
+	}
+	return res
 }
