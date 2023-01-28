@@ -28,7 +28,7 @@ func (printInfo *PrintInfo) Print() {
 		t.AppendRow(table.Row{
 			email,
 			item.CodeIncrease,
-			item.CodeIncrease,
+			item.CodeDecrease,
 			item.N,
 			fmt.Sprintf("%.2f%%", float32(item.N)/float32(item.CodeIncrease)*100),
 			fmt.Sprintf("%.2f%%", float32(item.N)/float32(printInfo.N)*100),
