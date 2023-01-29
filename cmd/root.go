@@ -20,7 +20,7 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	rootCmd.Flags().BoolVar(&Debug, "debug", false, "debug mode")
+	fmt.Printf("os.Args: %v\n", os.Args)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
