@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"git-analyse/repository"
+	"git-analyse/executor"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -15,7 +15,7 @@ var rootCmd = &cobra.Command{
 	Short: "git-analyse 是一个分析git提交的工具",
 	Long:  `git-analyse 是一个分析git提交的工具`,
 	Run: func(cmd *cobra.Command, args []string) {
-		repository.LoadAndPrintFromPath(args[0])
+		executor.LoadAndPrintFromPath(args[0])
 	},
 }
 

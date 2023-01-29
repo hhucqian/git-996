@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"git-analyse/print"
+	"git-analyse/executor"
 
 	"github.com/spf13/cobra"
 )
@@ -17,6 +17,6 @@ var printCmd = &cobra.Command{
 	Short: "打印统计信息",
 	Long:  `打印统计信息`,
 	Run: func(cmd *cobra.Command, args []string) {
-		print.Print(cmd.Flag("db").Value.String())
+		executor.Print(cmd.Flag("db").Value.String())
 	},
 }

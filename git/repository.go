@@ -1,7 +1,7 @@
-package repository
+package git
 
 import (
-	"git-analyse/model"
+	"git-analyse/git/model"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -23,12 +23,12 @@ func (repo *Repository) runCommad(name string, arg ...string) string {
 	}
 }
 
-func (repo *Repository) allCommitHash() []string {
+func (repo *Repository) AllCommitHash() []string {
 	result := repo.runCommad("git", "log", "--format=%H")
 	return strings.Split(strings.TrimSpace(result), "\n")
 }
 
-func (repo *Repository) commitInfo(hash string) model.GitCommitInfo {
+func (repo *Repository) CommitInfo(hash string) model.GitCommitInfo {
 	result := repo.runCommad("git", "show", "--pretty=%an%n%ae%n%at", "--numstat", hash)
 	result = strings.TrimSpace(result)
 	lines := strings.Split(result, "\n")
@@ -59,21 +59,21 @@ func (repo *Repository) commitInfo(hash string) model.GitCommitInfo {
 	return res
 }
 
-func (repo *Repository) commitSummary(hash string) map[string]*model.GitBlameItem {
+func (repo *Repository) CommitSummary(hash string) map[string]*model.GitBlameItem {
 	var commitSummary = make(map[string]*model.GitBlameItem)
-	files := repo.allFilesInCommit(hash)
+	files := repo.AllFilesInCommit(hash)
 	for _, fileName := range files {
-		repo.fileBlameInfo(fileName, hash, commitSummary)
+		repo.FileBlameInfo(fileName, hash, commitSummary)
 	}
 	return commitSummary
 }
 
-func (repo *Repository) allFilesInCommit(hash string) []string {
+func (repo *Repository) AllFilesInCommit(hash string) []string {
 	result := repo.runCommad("git", "-c", "core.quotepath=off", "ls-tree", "--name-only", "-r", hash)
 	return strings.Split(strings.TrimSpace(result), "\n")
 }
 
-func (repo *Repository) fileBlameInfo(fileName, hash string, summary map[string]*model.GitBlameItem) {
+func (repo *Repository) FileBlameInfo(fileName, hash string, summary map[string]*model.GitBlameItem) {
 	result := repo.runCommad("git", "blame", "-e", hash, "--", fileName)
 	for _, line := range strings.Split(result, "\n") {
 		if line != "" {

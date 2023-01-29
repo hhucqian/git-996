@@ -1,13 +1,14 @@
-package persisit
+package persist
 
 import (
 	"database/sql"
-	"git-analyse/model"
+	gitModel "git-analyse/git/model"
+	persistModel "git-analyse/persist/model"
 
 	"github.com/blockloop/scan"
 )
 
-func (storage *Storage) AddCommitItem(src model.GitCommitInfo) (bool, error) {
+func (storage *Storage) AddCommitItem(src gitModel.GitCommitInfo) (bool, error) {
 	if row, err := storage.DB.Query("select * from commit_item where hash = ?", src.Hash); err != nil {
 		return false, err
 	} else {
@@ -25,7 +26,7 @@ func (storage *Storage) AddCommitItem(src model.GitCommitInfo) (bool, error) {
 	}
 }
 
-func (storage *Storage) AddCommitSummary(src model.GitBlameItem) (bool, error) {
+func (storage *Storage) AddCommitSummary(src gitModel.GitBlameItem) (bool, error) {
 	if _, err := storage.DB.Exec("insert into commit_summary(hash, email, n) values(?,?,?)", src.Hash, src.Email, src.N); err != nil {
 		return false, err
 	} else {
@@ -59,14 +60,14 @@ func (storage *Storage) LatestCommitHash() (string, error) {
 	}
 }
 
-func (storage *Storage) CommitSummary(hash string) (model.DBCommitSummary, error) {
+func (storage *Storage) CommitSummary(hash string) (persistModel.DBCommitSummary, error) {
 	querySql := `
 select sum(code_increase) as codeIncrease, sum(code_decrease) as codeDecrease ,
 (select sum(n) from commit_summary where hash = ?) as n
 from commit_item
 where time <= (select time from commit_item where hash = ?)
 	`
-	var res model.DBCommitSummary
+	var res persistModel.DBCommitSummary
 	if rows, err := storage.DB.Query(querySql, hash, hash); err != nil {
 		return res, err
 	} else {
@@ -78,7 +79,7 @@ where time <= (select time from commit_item where hash = ?)
 	}
 }
 
-func (storage *Storage) CommitEmailSummary(hash, email string) (model.DBCommitSummary, error) {
+func (storage *Storage) CommitEmailSummary(hash, email string) (persistModel.DBCommitSummary, error) {
 	querySql := `
 select sum(code_increase) as codeIncrease, sum(code_decrease) as codeDecrease,
 (select sum(n) from commit_summary where hash = ? and email = ?) as n
@@ -86,7 +87,7 @@ from commit_item
 where time <= (select time from commit_item where hash = ?)
 and email = ?
 	`
-	var res model.DBCommitSummary
+	var res persistModel.DBCommitSummary
 	if rows, err := storage.DB.Query(querySql, hash, email, hash, email); err != nil {
 		return res, err
 	} else {
