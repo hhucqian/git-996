@@ -3,6 +3,6 @@
 使用方式
 
 ```shell
-git-analyse <git path>
+git-996 <git path>
 ```
 
