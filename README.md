@@ -1,8 +1,8 @@
-统计一个git仓库每个人提交的代码量
+一个统计git仓库每个人贡献的工具
 
 使用方式
 
 ```shell
-git-analyse -- <git path>
+git-analyse <git path>
 ```
 

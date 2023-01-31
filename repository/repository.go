@@ -1,18 +1,18 @@
-package git
+package repository
 
 import (
-	"git-analyse/git/model"
+	"git-analyse/repository/model"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 )
 
-type Repository struct {
+type GitRepository struct {
 	Path string
 }
 
-func (repo *Repository) runCommad(name string, arg ...string) string {
+func (repo *GitRepository) runCommad(name string, arg ...string) string {
 	exe_cmd := exec.Command(name, arg...)
 	exe_cmd.Dir = repo.Path
 	res, err := exe_cmd.Output()
@@ -23,12 +23,12 @@ func (repo *Repository) runCommad(name string, arg ...string) string {
 	}
 }
 
-func (repo *Repository) AllCommitHash() []string {
+func (repo *GitRepository) AllCommitHash() []string {
 	result := repo.runCommad("git", "log", "--format=%H")
 	return strings.Split(strings.TrimSpace(result), "\n")
 }
 
-func (repo *Repository) CommitInfo(hash string) model.GitCommitInfo {
+func (repo *GitRepository) CommitInfo(hash string) model.GitCommitInfo {
 	result := repo.runCommad("git", "show", "--pretty=%an%n%ae%n%at", "--numstat", hash)
 	result = strings.TrimSpace(result)
 	lines := strings.Split(result, "\n")
@@ -59,7 +59,7 @@ func (repo *Repository) CommitInfo(hash string) model.GitCommitInfo {
 	return res
 }
 
-func (repo *Repository) CommitSummary(hash string) map[string]*model.GitBlameItem {
+func (repo *GitRepository) CommitSummary(hash string) map[string]*model.GitBlameItem {
 	var commitSummary = make(map[string]*model.GitBlameItem)
 	files := repo.AllFilesInCommit(hash)
 	for _, fileName := range files {
@@ -68,12 +68,12 @@ func (repo *Repository) CommitSummary(hash string) map[string]*model.GitBlameIte
 	return commitSummary
 }
 
-func (repo *Repository) AllFilesInCommit(hash string) []string {
+func (repo *GitRepository) AllFilesInCommit(hash string) []string {
 	result := repo.runCommad("git", "-c", "core.quotepath=off", "ls-tree", "--name-only", "-r", hash)
 	return strings.Split(strings.TrimSpace(result), "\n")
 }
 
-func (repo *Repository) FileBlameInfo(fileName, hash string, summary map[string]*model.GitBlameItem) {
+func (repo *GitRepository) FileBlameInfo(fileName, hash string, summary map[string]*model.GitBlameItem) {
 	result := repo.runCommad("git", "blame", "-e", hash, "--", fileName)
 	for _, line := range strings.Split(result, "\n") {
 		if line != "" {

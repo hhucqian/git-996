@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jedib0t/go-pretty/table"
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 type PrintInfo_UserInfo struct {
