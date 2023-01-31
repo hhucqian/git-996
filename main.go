@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"git-analyse/model"
 	"git-analyse/repository"
 
@@ -19,13 +18,9 @@ func loadAndPrintFromPath(repositoryPath string) {
 	var printInfo = model.PrintInfo{
 		Members: make(map[string]*model.PrintInfo_UserInfo),
 	}
-	commitHashList := git.AllCommitHash()
-	if len(commitHashList) == 0 {
-		fmt.Println("git repository is empty")
-		return
-	}
-	for _, commitHash := range commitHashList {
-		commitInfo := git.CommitInfo(commitHash)
+
+	allCommitInfo := git.AllCommitInfo()
+	for _, commitInfo := range allCommitInfo {
 		if printInfo.Members[commitInfo.Email] == nil {
 			printInfo.Members[commitInfo.Email] = &model.PrintInfo_UserInfo{EMail: commitInfo.Email}
 		}
@@ -34,7 +29,8 @@ func loadAndPrintFromPath(repositoryPath string) {
 		printInfo.CodeIncrease += commitInfo.Plus
 		printInfo.CodeDecrease += commitInfo.Minus
 	}
-	commitSummary := git.CommitSummary(commitHashList[0])
+
+	commitSummary := git.CommitSummary(git.CurrentHeadHash())
 	for email, gitBlameItem := range commitSummary {
 		printInfo.Members[email].N += gitBlameItem.N
 		printInfo.N += gitBlameItem.N

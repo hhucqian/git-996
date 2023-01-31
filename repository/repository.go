@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type GitRepository struct {
@@ -19,42 +18,57 @@ func (repo *GitRepository) runCommad(name string, arg ...string) string {
 	if err != nil {
 		panic(err.Error())
 	} else {
-		return string(res)
+		return string(res[:len(res)-1])
 	}
 }
 
-func (repo *GitRepository) AllCommitHash() []string {
-	result := repo.runCommad("git", "log", "--format=%H")
-	return strings.Split(strings.TrimSpace(result), "\n")
-}
-
-func (repo *GitRepository) CommitInfo(hash string) model.GitCommitInfo {
-	result := repo.runCommad("git", "show", "--pretty=%an%n%ae%n%at", "--numstat", hash)
-	result = strings.TrimSpace(result)
+func (repo *GitRepository) AllCommitInfo() []*model.GitCommitInfo {
+	result := repo.runCommad("git", "log", "--pretty=tformat:==start==%nname=%an%nemail=%ae", "--shortstat")
 	lines := strings.Split(result, "\n")
-	split_line_n := 0
-	for i, v := range lines {
-		if len(v) == 0 {
-			split_line_n = i + 1
+	lineCount := len(lines)
+	currentLine := 0
+	res := make([]*model.GitCommitInfo, 0, 100)
+	var currentCommitInfo *model.GitCommitInfo
+	for {
+		if lines[currentLine] == "==start==" {
+			currentCommitInfo = &model.GitCommitInfo{}
+			res = append(res, currentCommitInfo)
+			currentLine++
+		}
+
+		for {
+			if len(lines[currentLine]) == 0 {
+				currentLine++
+				break
+			}
+
+			parts := strings.SplitN(lines[currentLine], "=", 2)
+			switch parts[0] {
+			case "name":
+				currentCommitInfo.Name = parts[1]
+			case "email":
+				currentCommitInfo.Email = parts[1]
+			}
+
+			currentLine++
+		}
+
+		parts := strings.Split(lines[currentLine], ",")
+		currentLine++
+		for _, part := range parts {
+			if strings.HasSuffix(part, "(+)") {
+				value, _ := strconv.ParseInt(strings.Split(part, " ")[1], 10, 32)
+				currentCommitInfo.Plus += int32(value)
+			}
+			if strings.HasSuffix(part, "(-)") {
+				value, _ := strconv.ParseInt(strings.Split(part, " ")[1], 10, 32)
+				currentCommitInfo.Minus += int32(value)
+			}
+		}
+
+		if lineCount == currentLine {
 			break
 		}
-	}
-
-	if split_line_n == 0 {
-		split_line_n = len(lines)
-	}
-
-	res := model.GitCommitInfo{Hash: hash}
-	res.Name = lines[0]
-	res.Email = lines[1]
-	unix_time, _ := strconv.ParseInt(lines[2], 10, 64)
-	res.AuthorTime = time.Unix(unix_time, 0)
-	for i := split_line_n; i < len(lines); i++ {
-		parts := strings.Split(lines[i], "\t")
-		pValue, _ := strconv.ParseInt(parts[0], 10, 32)
-		mValue, _ := strconv.ParseInt(parts[1], 10, 32)
-		res.Plus += int32(pValue)
-		res.Minus += int32(mValue)
 	}
 	return res
 }
@@ -70,7 +84,12 @@ func (repo *GitRepository) CommitSummary(hash string) map[string]*model.GitBlame
 
 func (repo *GitRepository) AllFilesInCommit(hash string) []string {
 	result := repo.runCommad("git", "-c", "core.quotepath=off", "ls-tree", "--name-only", "-r", hash)
-	return strings.Split(strings.TrimSpace(result), "\n")
+	return strings.Split(result, "\n")
+}
+
+func (repo *GitRepository) CurrentHeadHash() string {
+	result := repo.runCommad("git", "rev-parse", "HEAD")
+	return result
 }
 
 func (repo *GitRepository) FileBlameInfo(fileName, hash string, summary map[string]*model.GitBlameItem) {
