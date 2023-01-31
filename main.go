@@ -16,14 +16,18 @@ func main() {
 func loadAndPrintFromPath(repositoryPath string) {
 	var git = repository.GitRepository{Path: repositoryPath}
 	var printInfo = model.PrintInfo{
-		Members: make(map[string]*model.PrintInfo_UserInfo),
+		Members: make(map[string]*model.PrintInfo_MemberItem),
 	}
 
 	allCommitInfo := git.AllCommitInfo()
 	for _, commitInfo := range allCommitInfo {
 		if printInfo.Members[commitInfo.Email] == nil {
-			printInfo.Members[commitInfo.Email] = &model.PrintInfo_UserInfo{EMail: commitInfo.Email}
+			printInfo.Members[commitInfo.Email] = &model.PrintInfo_MemberItem{
+				EMail: commitInfo.Email,
+				Names: make(map[string]bool),
+			}
 		}
+		printInfo.Members[commitInfo.Email].Names[commitInfo.Name] = true
 		printInfo.Members[commitInfo.Email].CodeIncrease += commitInfo.Plus
 		printInfo.Members[commitInfo.Email].CodeDecrease += commitInfo.Minus
 		printInfo.CodeIncrease += commitInfo.Plus
