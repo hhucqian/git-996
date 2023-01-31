@@ -1,4 +1,4 @@
-module git-analyse
+module git-996
 
 go 1.19
 

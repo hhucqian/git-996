@@ -1,8 +1,8 @@
 package main
 
 import (
-	"git-analyse/model"
-	"git-analyse/repository"
+	"git-996/model"
+	"git-996/repository"
 
 	"os"
 )

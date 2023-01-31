@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"git-analyse/repository/model"
+	"git-996/repository/model"
 	"os/exec"
 	"strconv"
 	"strings"
