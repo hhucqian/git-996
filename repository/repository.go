@@ -34,7 +34,12 @@ func (repo *GitRepository) AllCommitInfo() []*model.GitCommitInfo {
 func (repo *GitRepository) AllCommitHash() []string {
 	result := repo.runCommad("git", "rev-list", "--all")
 	result = strings.Trim(result, "\n")
-	return strings.Split(result, "\n")
+	if result == "" {
+		// empty repository
+		return make([]string, 0)
+	} else {
+		return strings.Split(result, "\n")
+	}
 }
 
 func (repo *GitRepository) CommitInfo(commitHash string) *model.GitCommitInfo {
@@ -49,6 +54,10 @@ func (repo *GitRepository) CommitInfo(commitHash string) *model.GitCommitInfo {
 func (repo *GitRepository) Summary() map[string]*model.GitBlameItem {
 	var commitSummary = make(map[string]*model.GitBlameItem)
 	result := repo.runCommad("git", "-c", "core.quotepath=off", "ls-files", "--eol")
+	if result == "" {
+		// empty repository
+		return commitSummary
+	}
 	result = strings.Trim(result, "\n")
 	for _, line := range strings.Split(result, "\n") {
 		if !strings.HasPrefix(line, "i/-text") {
