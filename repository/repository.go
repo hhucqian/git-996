@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"git-996/repository/model"
 	"os/exec"
 	"strconv"
@@ -18,7 +19,7 @@ func (repo *GitRepository) runCommad(name string, arg ...string) string {
 	if err != nil {
 		panic(err.Error())
 	} else {
-		return strings.TrimSuffix(string(output), "\n")
+		return string(output)
 	}
 }
 
@@ -33,6 +34,7 @@ func (repo *GitRepository) AllCommitInfo() []*model.GitCommitInfo {
 
 func (repo *GitRepository) AllCommitHash() []string {
 	result := repo.runCommad("git", "rev-list", "--all")
+	result = strings.Trim(result, "\n")
 	return strings.Split(result, "\n")
 }
 
@@ -48,9 +50,12 @@ func (repo *GitRepository) CommitInfo(commitHash string) *model.GitCommitInfo {
 func (repo *GitRepository) Summary() map[string]*model.GitBlameItem {
 	var commitSummary = make(map[string]*model.GitBlameItem)
 	result := repo.runCommad("git", "-c", "core.quotepath=off", "ls-files", "--eol")
+	result = strings.Trim(result, "\n")
 	for _, line := range strings.Split(result, "\n") {
 		if !strings.HasPrefix(line, "i/-text") {
 			repo.FileBlameInfo(strings.Split(line, "\t")[1], "HEAD", commitSummary)
+		} else {
+			fmt.Printf("line: %v\n", line)
 		}
 	}
 	return commitSummary
