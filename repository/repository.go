@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"fmt"
 	"git-996/repository/model"
 	"os/exec"
 	"strconv"
@@ -54,8 +53,6 @@ func (repo *GitRepository) Summary() map[string]*model.GitBlameItem {
 	for _, line := range strings.Split(result, "\n") {
 		if !strings.HasPrefix(line, "i/-text") {
 			repo.FileBlameInfo(strings.Split(line, "\t")[1], "HEAD", commitSummary)
-		} else {
-			fmt.Printf("line: %v\n", line)
 		}
 	}
 	return commitSummary
