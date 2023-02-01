@@ -8,6 +8,10 @@ type GitCommitInfo struct {
 	Minus int32
 }
 
+func (gci *GitCommitInfo) EqualForTest(target *GitCommitInfo) bool {
+	return gci.Email == target.Email && gci.Name == target.Name && gci.Minus == target.Minus && gci.Plus == target.Plus
+}
+
 type GitBlameItem struct {
 	Email string
 	Hash  string
