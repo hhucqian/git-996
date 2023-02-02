@@ -1,6 +1,4 @@
-rm -rf repo
-mkdir -p repo
-cd repo
+cd $1
 
 git init
 git config user.name test
