@@ -1,3 +1,4 @@
+rm -rf repo
 mkdir -p repo
 cd repo
 

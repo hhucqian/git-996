@@ -14,6 +14,6 @@ func (gci *GitCommitInfo) EqualForTest(target *GitCommitInfo) bool {
 
 type GitBlameItem struct {
 	Email string
-	Hash  string
-	N     int32
+	// Hash  string
+	N int32
 }

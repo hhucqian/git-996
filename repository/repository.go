@@ -75,7 +75,7 @@ func (repo *GitRepository) FileBlameInfo(fileName, hash string, summary map[stri
 			email = email[:strings.Index(email, ">")]
 			item, err := summary[email]
 			if !err {
-				item = &model.GitBlameItem{Email: email, N: 0, Hash: hash}
+				item = &model.GitBlameItem{Email: email, N: 0}
 				summary[email] = item
 			}
 			item.N++
