@@ -51,8 +51,8 @@ func (repo *GitRepository) CommitInfo(commitHash string) *model.GitCommitInfo {
 	return res
 }
 
-func (repo *GitRepository) Summary() map[string]*model.GitBlameItem {
-	var commitSummary = make(map[string]*model.GitBlameItem)
+func (repo *GitRepository) Summary() map[string]*model.SummaryItem {
+	var commitSummary = make(map[string]*model.SummaryItem)
 	result := repo.runCommad("git", "-c", "core.quotepath=off", "ls-files", "--eol")
 	if result == "" {
 		// empty repository
@@ -67,7 +67,7 @@ func (repo *GitRepository) Summary() map[string]*model.GitBlameItem {
 	return commitSummary
 }
 
-func (repo *GitRepository) FileBlameInfo(fileName, hash string, summary map[string]*model.GitBlameItem) {
+func (repo *GitRepository) FileBlameInfo(fileName, hash string, summary map[string]*model.SummaryItem) {
 	result := repo.runCommad("git", "blame", "-e", hash, "--", fileName)
 	for _, line := range strings.Split(result, "\n") {
 		if line != "" {
@@ -75,7 +75,7 @@ func (repo *GitRepository) FileBlameInfo(fileName, hash string, summary map[stri
 			email = email[:strings.Index(email, ">")]
 			item, err := summary[email]
 			if !err {
-				item = &model.GitBlameItem{Email: email, N: 0}
+				item = &model.SummaryItem{Email: email, N: 0}
 				summary[email] = item
 			}
 			item.N++

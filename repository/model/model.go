@@ -12,8 +12,7 @@ func (gci *GitCommitInfo) EqualForTest(target *GitCommitInfo) bool {
 	return gci.Email == target.Email && gci.Name == target.Name && gci.Minus == target.Minus && gci.Plus == target.Plus
 }
 
-type GitBlameItem struct {
+type SummaryItem struct {
 	Email string
-	// Hash  string
-	N int32
+	N     int32
 }

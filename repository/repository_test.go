@@ -76,27 +76,27 @@ func TestGitRepository_Summary(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   map[string]*model.GitBlameItem
+		want   map[string]*model.SummaryItem
 	}{
 		{
 			name:   "init",
 			fields: fields{Path: "./repo/"},
-			want:   map[string]*model.GitBlameItem{},
+			want:   map[string]*model.SummaryItem{},
 		},
 		{
 			name:   "empty",
 			fields: fields{Path: "./repo/"},
-			want:   map[string]*model.GitBlameItem{},
+			want:   map[string]*model.SummaryItem{},
 		},
 		{
 			name:   "binary",
 			fields: fields{Path: "./repo/"},
-			want:   map[string]*model.GitBlameItem{},
+			want:   map[string]*model.SummaryItem{},
 		},
 		{
 			name:   "summary",
 			fields: fields{Path: "./repo/"},
-			want:   map[string]*model.GitBlameItem{"test@test.com": {Email: "test@test.com", N: 1}},
+			want:   map[string]*model.SummaryItem{"test@test.com": {Email: "test@test.com", N: 1}},
 		},
 	}
 	for _, tt := range tests {
