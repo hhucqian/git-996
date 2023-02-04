@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -31,7 +32,7 @@ type PrintInfo struct {
 	Members      map[string]*PrintInfo_MemberItem
 }
 
-func (printInfo *PrintInfo) Print() {
+func (printInfo *PrintInfo) PrintTable() {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"e-mail", "name", "+", "-", "产出", "留存率", "贡献率"})
@@ -48,4 +49,9 @@ func (printInfo *PrintInfo) Print() {
 	}
 	t.AppendFooter(table.Row{"", "", printInfo.CodeIncrease, printInfo.CodeDecrease, printInfo.N, "-", "-"})
 	t.Render()
+}
+
+func (printInfo *PrintInfo) PrintJSON() {
+	res, _ := json.MarshalIndent(printInfo, "", "  ")
+	fmt.Println(string(res))
 }

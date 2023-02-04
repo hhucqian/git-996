@@ -1,43 +1,9 @@
 package main
 
 import (
-	"git-996/model"
-	"git-996/repository"
-
-	"os"
+	"git-996/cmd"
 )
 
 func main() {
-	if len(os.Args) == 2 {
-		loadAndPrintFromPath(os.Args[1])
-	}
-}
-
-func loadAndPrintFromPath(repositoryPath string) {
-	var git = repository.GitRepository{Path: repositoryPath}
-	var printInfo = model.PrintInfo{
-		Members: make(map[string]*model.PrintInfo_MemberItem),
-	}
-
-	allCommitInfo := git.AllCommitInfo()
-	for _, commitInfo := range allCommitInfo {
-		if printInfo.Members[commitInfo.Email] == nil {
-			printInfo.Members[commitInfo.Email] = &model.PrintInfo_MemberItem{
-				EMail: commitInfo.Email,
-				Names: make(map[string]bool),
-			}
-		}
-		printInfo.Members[commitInfo.Email].Names[commitInfo.Name] = true
-		printInfo.Members[commitInfo.Email].CodeIncrease += commitInfo.Plus
-		printInfo.Members[commitInfo.Email].CodeDecrease += commitInfo.Minus
-		printInfo.CodeIncrease += commitInfo.Plus
-		printInfo.CodeDecrease += commitInfo.Minus
-	}
-
-	commitSummary := git.Summary()
-	for email, gitBlameItem := range commitSummary {
-		printInfo.Members[email].N += gitBlameItem.N
-		printInfo.N += gitBlameItem.N
-	}
-	printInfo.Print()
+	cmd.Execute()
 }
