@@ -1,7 +1,7 @@
 package execute
 
 import (
-	"git-996/arg"
+	"git-996/cmd/arg"
 	"git-996/model"
 	"git-996/repository"
 	"strings"

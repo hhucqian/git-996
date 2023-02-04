@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"git-996/arg"
+	"git-996/cmd/arg"
 	"git-996/execute"
 	"os"
 
