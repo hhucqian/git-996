@@ -22,6 +22,8 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.Flags().StringVarP(&arg.RootArg.Format, "format", "f", "table", "输出格式, table | json")
 	rootCmd.Flags().StringSliceVar(&arg.RootArg.MergeEMail, "merge-email", nil, "合并人员 例如：user1@mail.com=user2@mail.com")
+	rootCmd.Flags().StringVarP(&arg.RootArg.Sort, "sort", "s", "l", "排序方式： i | increase | d | decrease | l | left")
+	rootCmd.Flags().BoolVarP(&arg.RootArg.Revert, "revert", "r", true, "逆序")
 }
 
 func Execute() {
