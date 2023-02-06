@@ -93,7 +93,6 @@ func (repositoryResult *RepositoryResult) PrintTable() {
 	} else if strings.HasPrefix(arg.RootArg.Sort, "d") {
 		t.SortBy([]table.SortBy{{Name: "-", Mode: sortMode}})
 	}
-	t.SetStyle(table.StyleColoredDark)
 	t.Render()
 }
 
