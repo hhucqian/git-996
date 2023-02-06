@@ -1,11 +1,14 @@
 package model
 
+import "time"
+
 type GitCommitInfo struct {
-	Hash  string
-	Name  string
-	Email string
-	Plus  int32
-	Minus int32
+	Hash       string
+	Name       string
+	Email      string
+	Plus       int32
+	Minus      int32
+	AuthorTime time.Time
 }
 
 func (gci *GitCommitInfo) EqualForTest(target *GitCommitInfo) bool {

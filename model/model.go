@@ -17,6 +17,7 @@ type RepositoryResult_MemberItem struct {
 	CodeIncrease int32
 	CodeDecrease int32
 	N            int32
+	Days         map[string]bool
 }
 
 func (item *RepositoryResult_MemberItem) NamesString() string {
@@ -32,6 +33,9 @@ type RepositoryResult struct {
 	CodeDecrease int32
 	N            int32
 	Members      map[string]*RepositoryResult_MemberItem
+	Days         map[string]bool
+	From         string
+	To           string
 }
 
 type repositoryResultArray struct {
@@ -41,12 +45,12 @@ type repositoryResultArray struct {
 	Members      []*RepositoryResult_MemberItem
 }
 
-func (repoResult *RepositoryResult) toRepositoryResultArray() repositoryResultArray {
+func (repositoryResult *RepositoryResult) toRepositoryResultArray() repositoryResultArray {
 	var rra repositoryResultArray
-	rra.CodeDecrease = repoResult.CodeDecrease
-	rra.CodeIncrease = repoResult.CodeIncrease
-	rra.N = repoResult.N
-	for _, v := range repoResult.Members {
+	rra.CodeDecrease = repositoryResult.CodeDecrease
+	rra.CodeIncrease = repositoryResult.CodeIncrease
+	rra.N = repositoryResult.N
+	for _, v := range repositoryResult.Members {
 		rra.Members = append(rra.Members, v)
 	}
 	sort.Slice(rra.Members, func(i, j int) bool {
@@ -81,11 +85,12 @@ func (repositoryResult *RepositoryResult) PrintTable() {
 
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"e-mail", "name", "+", "-", "产出", "留存率", "贡献率"})
+	t.AppendHeader(table.Row{"e-mail", "name", "days", "+", "-", "产出", "留存率", "贡献率"})
 	for _, item := range rra.Members {
 		t.AppendRow(table.Row{
 			item.EMail,
 			item.NamesString(),
+			len(item.Days),
 			item.CodeIncrease,
 			item.CodeDecrease,
 			item.N,
@@ -93,7 +98,7 @@ func (repositoryResult *RepositoryResult) PrintTable() {
 			fmt.Sprintf("%.2f%%", float32(item.N)/float32(repositoryResult.N)*100),
 		})
 	}
-	t.AppendFooter(table.Row{"", "", repositoryResult.CodeIncrease, repositoryResult.CodeDecrease, repositoryResult.N, "-", "-"})
+	t.AppendFooter(table.Row{"From：" + repositoryResult.From, "To：" + repositoryResult.To, len(repositoryResult.Days), repositoryResult.CodeIncrease, repositoryResult.CodeDecrease, repositoryResult.N, "-", "-"})
 	t.Render()
 }
 

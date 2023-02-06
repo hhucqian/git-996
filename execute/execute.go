@@ -11,6 +11,7 @@ func LoadAndPrintFromPath(repositoryPath string) {
 	var git = repository.GitRepository{Path: repositoryPath}
 	var repositoryResult = model.RepositoryResult{
 		Members: make(map[string]*model.RepositoryResult_MemberItem),
+		Days:    make(map[string]bool),
 	}
 
 	allCommitInfo := git.AllCommitInfo()
@@ -19,13 +20,20 @@ func LoadAndPrintFromPath(repositoryPath string) {
 			repositoryResult.Members[commitInfo.Email] = &model.RepositoryResult_MemberItem{
 				EMail: commitInfo.Email,
 				Names: make(map[string]bool),
+				Days:  make(map[string]bool),
 			}
 		}
 		repositoryResult.Members[commitInfo.Email].Names[commitInfo.Name] = true
+		repositoryResult.Members[commitInfo.Email].Days[commitInfo.AuthorTime.Format("2006-01-02")] = true
 		repositoryResult.Members[commitInfo.Email].CodeIncrease += commitInfo.Plus
 		repositoryResult.Members[commitInfo.Email].CodeDecrease += commitInfo.Minus
 		repositoryResult.CodeIncrease += commitInfo.Plus
 		repositoryResult.CodeDecrease += commitInfo.Minus
+		repositoryResult.Days[commitInfo.AuthorTime.Format("2006-01-02")] = true
+	}
+	if len(allCommitInfo) > 0 {
+		repositoryResult.To = allCommitInfo[0].AuthorTime.Format("2006-01-02")
+		repositoryResult.From = allCommitInfo[len(allCommitInfo)-1].AuthorTime.Format("2006-01-02")
 	}
 
 	commitSummary := git.Summary()

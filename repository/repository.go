@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type GitRepository struct {
@@ -12,9 +13,9 @@ type GitRepository struct {
 }
 
 func (repo *GitRepository) runCommad(name string, arg ...string) string {
-	exe_cmd := exec.Command(name, arg...)
-	exe_cmd.Dir = repo.Path
-	output, err := exe_cmd.Output()
+	exeCmd := exec.Command(name, arg...)
+	exeCmd.Dir = repo.Path
+	output, err := exeCmd.Output()
 	if err != nil {
 		panic(err.Error())
 	} else {
@@ -43,7 +44,7 @@ func (repo *GitRepository) AllCommitHash() []string {
 }
 
 func (repo *GitRepository) CommitInfo(commitHash string) *model.GitCommitInfo {
-	result := repo.runCommad("git", "show", "--pretty=format:hash=%H%nname=%an%nemail=%ae%n==split==", "--shortstat", commitHash)
+	result := repo.runCommad("git", "show", "--pretty=format:hash=%H%nname=%an%nemail=%ae%ntime=%at%n==split==", "--shortstat", commitHash)
 	parts := strings.SplitN(result, "==split==", 2)
 	var res = &model.GitCommitInfo{}
 	parseGitCommitMetaInfo(parts[0], res)
@@ -94,6 +95,9 @@ func parseGitCommitMetaInfo(src string, target *model.GitCommitInfo) {
 			target.Name = parts[1]
 		case "email":
 			target.Email = parts[1]
+		case "time":
+			unixTime, _ := strconv.ParseInt(parts[1], 10, 32)
+			target.AuthorTime = time.Unix(unixTime, 0)
 		}
 	}
 }
