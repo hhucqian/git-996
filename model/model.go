@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"git-996/cmd/arg"
 	"os"
-	"sort"
 	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-type RepositoryResult_MemberItem struct {
+type RepositoryresultMemberitem struct {
 	EMail        string
 	Names        map[string]bool
 	CodeIncrease int32
@@ -20,7 +19,7 @@ type RepositoryResult_MemberItem struct {
 	Days         map[string]bool
 }
 
-func (item *RepositoryResult_MemberItem) NamesString() string {
+func (item *RepositoryresultMemberitem) NamesString() string {
 	keys := make([]string, 0, len(item.Names))
 	for k := range item.Names {
 		keys = append(keys, k)
@@ -32,7 +31,7 @@ type RepositoryResult struct {
 	CodeIncrease int32
 	CodeDecrease int32
 	N            int32
-	Members      map[string]*RepositoryResult_MemberItem
+	Members      map[string]*RepositoryresultMemberitem
 	Days         map[string]bool
 	From         string
 	To           string
@@ -42,7 +41,7 @@ type repositoryResultArray struct {
 	CodeIncrease int32
 	CodeDecrease int32
 	N            int32
-	Members      []*RepositoryResult_MemberItem
+	Members      []*RepositoryresultMemberitem
 }
 
 func (repositoryResult *RepositoryResult) toRepositoryResultArray() repositoryResultArray {
@@ -53,30 +52,6 @@ func (repositoryResult *RepositoryResult) toRepositoryResultArray() repositoryRe
 	for _, v := range repositoryResult.Members {
 		rra.Members = append(rra.Members, v)
 	}
-	sort.Slice(rra.Members, func(i, j int) bool {
-		if arg.RootArg.Revert {
-			if strings.HasPrefix(arg.RootArg.Sort, "l") {
-				return rra.Members[i].N > rra.Members[j].N
-			}
-			if strings.HasPrefix(arg.RootArg.Sort, "i") {
-				return rra.Members[i].CodeIncrease > rra.Members[j].CodeIncrease
-			}
-			if strings.HasPrefix(arg.RootArg.Sort, "d") {
-				return rra.Members[i].CodeDecrease > rra.Members[j].CodeDecrease
-			}
-		} else {
-			if strings.HasPrefix(arg.RootArg.Sort, "l") {
-				return rra.Members[i].N < rra.Members[j].N
-			}
-			if strings.HasPrefix(arg.RootArg.Sort, "i") {
-				return rra.Members[i].CodeIncrease < rra.Members[j].CodeIncrease
-			}
-			if strings.HasPrefix(arg.RootArg.Sort, "d") {
-				return rra.Members[i].CodeDecrease < rra.Members[j].CodeDecrease
-			}
-		}
-		return true
-	})
 	return rra
 }
 
@@ -98,7 +73,27 @@ func (repositoryResult *RepositoryResult) PrintTable() {
 			fmt.Sprintf("%.2f%%", float32(item.N)/float32(repositoryResult.N)*100),
 		})
 	}
-	t.AppendFooter(table.Row{"From：" + repositoryResult.From, "To：" + repositoryResult.To, len(repositoryResult.Days), repositoryResult.CodeIncrease, repositoryResult.CodeDecrease, repositoryResult.N, "-", "-"})
+	t.AppendFooter(table.Row{
+		"From：" + repositoryResult.From,
+		"To：" + repositoryResult.To,
+		len(repositoryResult.Days),
+		repositoryResult.CodeIncrease,
+		repositoryResult.CodeDecrease,
+		repositoryResult.N,
+		fmt.Sprintf("%.2f%%", float32(repositoryResult.N)/float32(repositoryResult.CodeIncrease)*100),
+		""})
+	sortMode := table.AscNumeric
+	if arg.RootArg.Revert {
+		sortMode = table.DscNumeric
+	}
+	if strings.HasPrefix(arg.RootArg.Sort, "l") {
+		t.SortBy([]table.SortBy{{Name: "产出", Mode: sortMode}})
+	} else if strings.HasPrefix(arg.RootArg.Sort, "i") {
+		t.SortBy([]table.SortBy{{Name: "+", Mode: sortMode}})
+	} else if strings.HasPrefix(arg.RootArg.Sort, "d") {
+		t.SortBy([]table.SortBy{{Name: "-", Mode: sortMode}})
+	}
+	t.SetStyle(table.StyleColoredDark)
 	t.Render()
 }
 

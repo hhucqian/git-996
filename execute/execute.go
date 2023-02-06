@@ -10,14 +10,14 @@ import (
 func LoadAndPrintFromPath(repositoryPath string) {
 	var git = repository.GitRepository{Path: repositoryPath}
 	var repositoryResult = model.RepositoryResult{
-		Members: make(map[string]*model.RepositoryResult_MemberItem),
+		Members: make(map[string]*model.RepositoryresultMemberitem),
 		Days:    make(map[string]bool),
 	}
 
 	allCommitInfo := git.AllCommitInfo()
 	for _, commitInfo := range allCommitInfo {
 		if repositoryResult.Members[commitInfo.Email] == nil {
-			repositoryResult.Members[commitInfo.Email] = &model.RepositoryResult_MemberItem{
+			repositoryResult.Members[commitInfo.Email] = &model.RepositoryresultMemberitem{
 				EMail: commitInfo.Email,
 				Names: make(map[string]bool),
 				Days:  make(map[string]bool),
