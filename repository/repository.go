@@ -14,7 +14,7 @@ type GitRepository struct {
 	Path string
 }
 
-func (repo *GitRepository) runCommad(name string, arg ...string) string {
+func (repo *GitRepository) runCommand(name string, arg ...string) string {
 	exeCmd := exec.Command(name, arg...)
 	exeCmd.Dir = repo.Path
 	output, err := exeCmd.Output()
@@ -76,7 +76,7 @@ func (repo *GitRepository) AllCommitInfo() []*model.GitCommitInfo {
 }
 
 func (repo *GitRepository) AllCommitHash() []string {
-	result := repo.runCommad("git", "rev-list", "--all")
+	result := repo.runCommand("git", "rev-list", "--all")
 	result = strings.Trim(result, "\n")
 	if result == "" {
 		// empty repository
@@ -87,7 +87,7 @@ func (repo *GitRepository) AllCommitHash() []string {
 }
 
 func (repo *GitRepository) CommitInfo(commitHash string) *model.GitCommitInfo {
-	result := repo.runCommad("git", "show", "--pretty=format:hash=%H%nname=%an%nemail=%ae%ntime=%at%n==split==", "--shortstat", commitHash)
+	result := repo.runCommand("git", "show", "--pretty=format:hash=%H%nname=%an%nemail=%ae%ntime=%at%n==split==", "--shortstat", commitHash)
 	parts := strings.SplitN(result, "==split==", 2)
 	var res = &model.GitCommitInfo{}
 	parseGitCommitMetaInfo(parts[0], res)
@@ -103,7 +103,7 @@ func (repo *GitRepository) Summary() map[string]*model.SummaryItem {
 	var done sync.WaitGroup
 
 	go func() {
-		result := repo.runCommad("git", "-c", "core.quotepath=off", "ls-files", "--eol")
+		result := repo.runCommand("git", "-c", "core.quotepath=off", "ls-files", "--eol")
 		if result == "" {
 			return
 		}
@@ -157,7 +157,7 @@ func (repo *GitRepository) Summary() map[string]*model.SummaryItem {
 }
 
 func (repo *GitRepository) FileBlameInfo(fileName, hash string) map[string]*model.SummaryItem {
-	result := repo.runCommad("git", "blame", "-e", hash, "--", fileName)
+	result := repo.runCommand("git", "blame", "-e", hash, "--", fileName)
 	summary := make(map[string]*model.SummaryItem)
 	for _, line := range strings.Split(result, "\n") {
 		if line != "" {
