@@ -3,8 +3,10 @@ package repository
 import (
 	"git-996/repository/model"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -26,9 +28,50 @@ func (repo *GitRepository) runCommad(name string, arg ...string) string {
 func (repo *GitRepository) AllCommitInfo() []*model.GitCommitInfo {
 	var res []*model.GitCommitInfo
 	allCommitHash := repo.AllCommitHash()
-	for _, commitHash := range allCommitHash {
-		res = append(res, repo.CommitInfo(commitHash))
+	hashCh := make(chan string)
+	gitCommitInfoCh := make(chan *model.GitCommitInfo)
+	var wg sync.WaitGroup
+	var done sync.WaitGroup
+
+	go func() {
+		for _, commitHash := range allCommitHash {
+			hashCh <- commitHash
+		}
+		close(hashCh)
+	}()
+
+	for i := 0; i < runtime.NumCPU(); i++ {
+		wg.Add(1)
+		go func() {
+			for {
+				if commitHash, result := <-hashCh; result {
+					gitCommitInfoCh <- repo.CommitInfo(commitHash)
+				} else {
+					wg.Done()
+					break
+				}
+			}
+		}()
 	}
+
+	go func() {
+		wg.Wait()
+		close(gitCommitInfoCh)
+	}()
+
+	done.Add(1)
+	go func() {
+		for {
+			if commitInfo, result := <-gitCommitInfoCh; result {
+				res = append(res, commitInfo)
+			} else {
+				done.Done()
+				break
+			}
+		}
+	}()
+
+	done.Wait()
 	return res
 }
 
@@ -54,22 +97,68 @@ func (repo *GitRepository) CommitInfo(commitHash string) *model.GitCommitInfo {
 
 func (repo *GitRepository) Summary() map[string]*model.SummaryItem {
 	var commitSummary = make(map[string]*model.SummaryItem)
-	result := repo.runCommad("git", "-c", "core.quotepath=off", "ls-files", "--eol")
-	if result == "" {
-		// empty repository
-		return commitSummary
+	fileCh := make(chan string)
+	blameInfoCh := make(chan map[string]*model.SummaryItem)
+	var wg sync.WaitGroup
+	var done sync.WaitGroup
+
+	go func() {
+		result := repo.runCommad("git", "-c", "core.quotepath=off", "ls-files", "--eol")
+		if result == "" {
+			return
+		}
+		result = strings.Trim(result, "\n")
+		for _, line := range strings.Split(result, "\n") {
+			if !strings.HasPrefix(line, "i/-text") {
+				fileCh <- strings.Split(line, "\t")[1]
+			}
+		}
+		close(fileCh)
+	}()
+
+	for i := 0; i < runtime.NumCPU(); i++ {
+		wg.Add(1)
+		go func() {
+			for {
+				if fileName, result := <-fileCh; result {
+					blameInfoCh <- repo.FileBlameInfo(fileName, "HEAD")
+				} else {
+					wg.Done()
+					break
+				}
+			}
+		}()
 	}
-	result = strings.Trim(result, "\n")
-	for _, line := range strings.Split(result, "\n") {
-		if !strings.HasPrefix(line, "i/-text") {
-			repo.FileBlameInfo(strings.Split(line, "\t")[1], "HEAD", commitSummary)
+
+	go func() {
+		wg.Wait()
+		close(blameInfoCh)
+	}()
+
+	done.Add(1)
+	for {
+		if subMap, result := <-blameInfoCh; result {
+			for email, summaryItem := range subMap {
+				item, err := commitSummary[email]
+				if !err {
+					item = &model.SummaryItem{Email: email, N: 0}
+					commitSummary[email] = item
+				}
+				item.N += summaryItem.N
+			}
+		} else {
+			done.Done()
+			break
 		}
 	}
+
+	done.Wait()
 	return commitSummary
 }
 
-func (repo *GitRepository) FileBlameInfo(fileName, hash string, summary map[string]*model.SummaryItem) {
+func (repo *GitRepository) FileBlameInfo(fileName, hash string) map[string]*model.SummaryItem {
 	result := repo.runCommad("git", "blame", "-e", hash, "--", fileName)
+	summary := make(map[string]*model.SummaryItem)
 	for _, line := range strings.Split(result, "\n") {
 		if line != "" {
 			email := line[strings.Index(line, "(<")+2:]
@@ -82,6 +171,7 @@ func (repo *GitRepository) FileBlameInfo(fileName, hash string, summary map[stri
 			item.N++
 		}
 	}
+	return summary
 }
 
 func parseGitCommitMetaInfo(src string, target *model.GitCommitInfo) {
