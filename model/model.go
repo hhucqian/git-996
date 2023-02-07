@@ -10,7 +10,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-type RepositoryresultMemberitem struct {
+type RepositoryResultMemberitem struct {
 	EMail        string
 	Names        map[string]bool
 	CodeIncrease int32
@@ -19,7 +19,7 @@ type RepositoryresultMemberitem struct {
 	Days         map[string]bool
 }
 
-func (item *RepositoryresultMemberitem) NamesString() string {
+func (item *RepositoryResultMemberitem) NamesString() string {
 	keys := make([]string, 0, len(item.Names))
 	for k := range item.Names {
 		keys = append(keys, k)
@@ -31,7 +31,7 @@ type RepositoryResult struct {
 	CodeIncrease int32
 	CodeDecrease int32
 	N            int32
-	Members      map[string]*RepositoryresultMemberitem
+	Members      map[string]*RepositoryResultMemberitem
 	Days         map[string]bool
 	From         string
 	To           string
@@ -41,7 +41,7 @@ type repositoryResultArray struct {
 	CodeIncrease int32
 	CodeDecrease int32
 	N            int32
-	Members      []*RepositoryresultMemberitem
+	Members      []*RepositoryResultMemberitem
 }
 
 func (repositoryResult *RepositoryResult) toRepositoryResultArray() repositoryResultArray {
