@@ -20,7 +20,7 @@ jobs:
     - name: Build
       run: sh build.sh
 
-    - name: action-ghrelease
-      uses: phuonghuynh/action-ghrelease@v1.1.0
+    - name: Release
+      uses: softprops/action-gh-release@v1
       with:
         files: ./build/*
