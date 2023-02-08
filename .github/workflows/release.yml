@@ -18,7 +18,7 @@ jobs:
         cache: true
 
     - name: Build
-      run: sh build.gh
+      run: sh build.sh
 
     - name: action-ghrelease
       uses: phuonghuynh/action-ghrelease@v1.1.0
