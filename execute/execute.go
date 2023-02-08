@@ -5,6 +5,7 @@ import (
 	"git-996/model"
 	"git-996/repository"
 	"strings"
+	"time"
 )
 
 func LoadAndPrintFromPath(repositoryPath string) {
@@ -24,16 +25,16 @@ func LoadAndPrintFromPath(repositoryPath string) {
 			}
 		}
 		repositoryResult.Members[commitInfo.Email].Names[commitInfo.Name] = true
-		repositoryResult.Members[commitInfo.Email].Days[commitInfo.AuthorTime.Format("2006-01-02")] = true
+		repositoryResult.Members[commitInfo.Email].Days[commitInfo.AuthorTime.Format(time.DateOnly)] = true
 		repositoryResult.Members[commitInfo.Email].CodeIncrease += commitInfo.Plus
 		repositoryResult.Members[commitInfo.Email].CodeDecrease += commitInfo.Minus
 		repositoryResult.CodeIncrease += commitInfo.Plus
 		repositoryResult.CodeDecrease += commitInfo.Minus
-		repositoryResult.Days[commitInfo.AuthorTime.Format("2006-01-02")] = true
+		repositoryResult.Days[commitInfo.AuthorTime.Format(time.DateOnly)] = true
 	}
 	if len(allCommitInfo) > 0 {
-		repositoryResult.To = allCommitInfo[0].AuthorTime.Format("2006-01-02")
-		repositoryResult.From = allCommitInfo[len(allCommitInfo)-1].AuthorTime.Format("2006-01-02")
+		repositoryResult.To = allCommitInfo[0].AuthorTime.Format(time.DateOnly)
+		repositoryResult.From = allCommitInfo[len(allCommitInfo)-1].AuthorTime.Format(time.DateOnly)
 	}
 
 	commitSummary := git.Summary()

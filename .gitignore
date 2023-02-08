@@ -1,3 +1,4 @@
 \.vscode
 \git-996
 .DS_Store
+\build
